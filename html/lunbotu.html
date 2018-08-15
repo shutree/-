@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>轮播图</title>
+        <script type="text/javascript">
+            document.addEventListener('DOMContentLoaded',function(){
+                var Carousel = function(opts){
+                    let defaults = {
+                        ele:'',
+                        imgs:[],
+                        width:810,
+                        height:320,
+                        index:0,
+                        page:true,
+                        button:true,
+                        type:'vertical',
+                        seamless:true,
+                        duration:2000
+                    }
+                    this.opt = Object.assign({},defaults,opts);
+                    this.len = this.opt.imgs.length;
+                    this.init();
+                }
+
+                Carousel.prototype.init = function(){
+                    var opt - this.opt;
+                    var ele = document.querySelector(opt.ele);
+                    ele.classList.add('lx-carousel');
+                    ele.style.width = opt.width + 'px';
+                    ele.style.height = opt.height + 'px';
+                    let ul = document.createElement('ul');
+                    ul.className = opt.type;
+                    if(opt.type === 'horizontal'){
+                        ul.style.width = opt.width * this.len + 'px';
+                    }else if(opt.type === 'fade'){
+                        ul.style.width = opt.width + 'px';
+                        ul.style.height = opt.height + 'px';
+                    }
+                    ul.innerHTML = opt.imgs.map(url=>{
+                        return '<li><img src="'+url+'"/></li>';
+                    }).join('');
+                    ele.appendChild(ul);
+                    if(opt.page){
+                        this.page = document.createElement('div');
+                        this.page.className = 'page';
+                        if(var i = 0;i<this.len;i++){
+                            var span = document.createElement('span');
+                            span.innerText = i+1;
+                            if(i === opt.index){
+                                span.className = 'active';
+                            }
+                            this.page.appendChild(span);
+                        }
+                        ele.appendChild(this.page);
+                    }
+                    if(opt.button){
+                        let btnPrev = document.createElement('span');
+                        btnPrev.className = 'btn-prev';
+                        btnPrev.innerHTML = '&lt;';
+                        let btnNext = document.createElement('span');
+                        btnNext.className = 'btn-next';
+                        btnNext.innerHTML = '&gt;';
+                        ele.appendChild(btnPrev);
+                        ele.appendChild(btnNext);
+                    }
+                    this.ul = ul;
+                    this.ele = ele;
+                    this.timer = setInterval(this.autoPlay.bind(this),opt.duration);
+                    this.play();
+                    ele.onmouseover =()=>{
+                        this.stop();
+                    }
+                    ele.onmouseout =()=>{
+                        this.timer = setInterval(this.autoPlay.bind(this),opt.duration);
+                    }
+                    ele.onclick = e =>{
+                        if(e.target.parentNode.className === 'page'){
+                            opt.index = e.target.innerText-1;
+                            this.play();
+                        }else if(e.target.className === 'btn-prev'){
+                            opt.index--;
+                            this.play();
+                        }else if(e.target.className === 'btn-next'){
+                            opt.index++;
+                            this.play();
+                        }
+                    }
+                }
+                Carousel.prototype.autoPlay = function(){
+                    this.opt.index++;
+                    this.play();
+                }
+                Carousel.prototype.play = function(){
+                    let opt = this.opt;
+                    if(opt.index>=this.len){
+                        opt.index = 0;
+                    }else if(opt.index<0){
+                        opt.index = this.len-1;
+                    }
+                    var obj = {};
+                    if(opt.type === 'horizontal'){
+                        obj.left = -opt.index*opt.width;
+                        animate(this.ul,obj);
+                    }else if(opt.type === 'vertical'){
+                        obj.opt = -opt.index*opt.height;
+                        animate(this.ul,obj);
+                    }else if(opt.type === 'fade'){
+                        for(var i =0;i<this.len;i++){
+                            animate(this.ul.children[i],{opacity:0});
+                        }
+                        animate(this.ul.children[opt.index],{opacity:1});
+                    }
+                    if(this.page){
+                        for(var i =0;i <this.len;i++){
+                            this.page.children[i].className = '';
+                        }
+                        this.page.children[opt.index].className = 'active';
+                    }
+                }
+                Carousel.prototype.stop = function(){
+                    clearInterval(this.timer);
+                }
+            })
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
