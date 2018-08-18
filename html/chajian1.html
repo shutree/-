@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <title>插件</title>
+        <script type="text/javascript">
+            ;(function($){
+                $.prototype.lxzoom = function(opts){
+                    var defaults = {
+                        width:300,
+                        height:200,
+                        position:'right',
+                        gap:15
+                    }
+                    this.each(function(){
+                        var opt = $.extend({},defaults,opts);
+                        var $small = $(this);
+                        $small.addClass('lx-zoom');
+                        var $smallImg = $small.children('img');
+                        var ratio;
+                        var $big = $('<div/>').addClass('lx-bigzoom').appendTo('body');
+                        var $bigImg;
+                        var bigLeft,bigTop;
+                        switch(opt.position){
+                            case 'left':
+                                bigLeft = $small.offset().left - opt.gap -opt.width;
+                                bigTop = $small.offst().top;
+                                break;
+                            case 'right':
+                                bigLeft = $small.offset().left + $smallImg.outerWidth() + opt.gap;
+                                bigTop = $small.offset().top;
+                                break;
+                            case 'top':
+                                bigLeft = $small.offset().left;
+                                bigTop = $small.offset().top - opt.gap - opt.height;
+                                break;
+                            case 'bottom':
+                                bigLeft = $small.offset().left;
+                                bigTop = $small.offset().top + $smallImg.outerHeight()+opt.gap;
+                        }
+                        $big.css({
+                            width:opt.width,
+                            height:opt.height,
+                            top:bigTop,
+                            left:bigLeft
+                        });
+                        var $zoom = $('<div/>').addClass('zoom').appendTo($small);
+                        $small.on('mouseover',function(){
+                            $zoom.show();
+                            $big.show();
+                            var bigUrl = $smallImg.attr('data-big');
+                            $big.empty();
+                            $bigImg = $('<img/>').attr('src',bigUrl).appendTo($big);
+                            var img = new Image();
+                            img.src = bigUrl;
+                            img.onload = function(){
+                                ratio = $bigImg.outerWidth()/$smallImg.outerWidth();
+                                $zoom.css({
+                                    width:opt.width/ratio,
+                                    height:opt.height/ratio
+                                });
+                            }
+                        }).on('mouseout',function(){
+                            $zoom.hide();
+                            $big.hide();
+                        })
+                    }).on('mousemove',function(){
+                        var left = e.pageX - $zoom.outerWidth()/2 - $small.offset().left;
+                        var top = e.pageY - $zoom.outerHeight()/2 - $small.offset().top;
+                        if(left < 0){
+                            left = 0;
+                        }else if(left > $smallImg.outerWidth() - $zoom.outerWidth()){
+                            left = $smallImg.outerWidth() - $zoom.outerWidth();
+                        }
+                        if(top < 0){
+                            top = 0;
+                        }else if(top > $small.outerHeight() - $zoom.outerHeight()){
+                            top = $small.outerHeight() - $zoom.outerHeight();
+                        }
+                        $zoom.css({
+                            left:left,
+                            top:top
+                        });
+                        $bigImg.css({
+                            left:-left*ratio,
+                            top:-top*ratio
+                        })
+                    })
+                }
+            })(jQuery);
+        </script>
+    </head>
+    <body>
+    </body>
+</html>
